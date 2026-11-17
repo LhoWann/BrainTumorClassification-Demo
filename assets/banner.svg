@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1152" height="288" viewBox="0 0 1152 288" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, 'DejaVu Sans', sans-serif">
+  <title>Brain Tumor MRI Classification</title>
+  <defs>
+    <clipPath id="card"><rect x="1.44" y="1.44" width="1149.12" height="285.12" rx="18.72"/></clipPath>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="0.35">
+      <stop offset="0" stop-color="#091122"/><stop offset="0.45" stop-color="#101b33"/>
+      <stop offset="1" stop-color="#1b2c51"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.3" r="0.55">
+      <stop offset="0" stop-color="#26385a" stop-opacity="0.55"/><stop offset="1" stop-color="#26385a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="brain" cx="0.45" cy="0.4" r="0.7">
+      <stop offset="0" stop-color="#c3cddd"/><stop offset="0.6" stop-color="#7d8aa3"/>
+      <stop offset="1" stop-color="#3b4a66"/>
+    </radialGradient>
+    <radialGradient id="tumor" cx="0.4" cy="0.4" r="0.7">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f4cdd0"/>
+    </radialGradient>
+  </defs>
+  <g clip-path="url(#card)">
+    <rect width="1152" height="288" fill="url(#bg)"/>
+    <rect width="1152" height="288" fill="url(#glow)"/>
+    <g fill="none" stroke="#a2c8ec" stroke-width="1">
+    <circle cx="751.1" cy="36.5" r="10.9" opacity="0.024"/>
+    <circle cx="876.2" cy="102.6" r="7.3" opacity="0.045"/>
+    <circle cx="582.1" cy="123.6" r="7.4" opacity="0.025"/>
+    <circle cx="810.5" cy="244.7" r="7.7" opacity="0.031"/>
+    <circle cx="930.2" cy="281.9" r="10.5" opacity="0.040"/>
+    <circle cx="1136.0" cy="4.3" r="12.2" opacity="0.034"/>
+    <circle cx="645.1" cy="26.3" r="8.9" opacity="0.061"/>
+    <circle cx="666.6" cy="169.1" r="10.8" opacity="0.039"/>
+    <circle cx="883.2" cy="9.3" r="7.4" opacity="0.030"/>
+    <circle cx="961.4" cy="121.7" r="8.9" opacity="0.049"/>
+    <circle cx="827.4" cy="82.3" r="11.8" opacity="0.055"/>
+    <circle cx="704.0" cy="166.9" r="10.2" opacity="0.064"/>
+    <circle cx="990.4" cy="78.7" r="12.9" opacity="0.026"/>
+    <circle cx="806.7" cy="223.2" r="7.9" opacity="0.044"/>
+    <circle cx="583.1" cy="195.8" r="11.6" opacity="0.049"/>
+    <circle cx="1076.5" cy="86.6" r="11.2" opacity="0.050"/>
+    <circle cx="902.1" cy="130.5" r="12.0" opacity="0.067"/>
+    <circle cx="839.7" cy="194.6" r="7.4" opacity="0.055"/>
+    <circle cx="941.8" cy="295.9" r="11.9" opacity="0.034"/>
+    <circle cx="787.6" cy="195.9" r="7.1" opacity="0.043"/>
+    <circle cx="659.1" cy="26.1" r="7.4" opacity="0.058"/>
+    <circle cx="636.3" cy="66.3" r="9.3" opacity="0.064"/>
+    <circle cx="607.5" cy="128.3" r="10.3" opacity="0.064"/>
+    <circle cx="1043.4" cy="256.1" r="8.7" opacity="0.041"/>
+    <circle cx="771.7" cy="262.3" r="12.7" opacity="0.028"/>
+    <circle cx="664.0" cy="61.4" r="8.4" opacity="0.044"/>
+    <circle cx="907.6" cy="70.9" r="7.0" opacity="0.041"/>
+    <circle cx="777.9" cy="164.4" r="12.7" opacity="0.055"/>
+    <circle cx="864.1" cy="180.2" r="11.1" opacity="0.023"/>
+    <circle cx="1090.7" cy="230.2" r="12.2" opacity="0.060"/>
+    <circle cx="791.5" cy="112.9" r="7.6" opacity="0.052"/>
+    <circle cx="596.7" cy="10.7" r="8.3" opacity="0.028"/>
+    <circle cx="760.6" cy="6.2" r="7.0" opacity="0.028"/>
+    <circle cx="619.9" cy="102.0" r="7.2" opacity="0.064"/>
+    <circle cx="922.3" cy="35.8" r="8.5" opacity="0.037"/>
+    <circle cx="774.9" cy="27.8" r="12.1" opacity="0.070"/>
+    <circle cx="834.9" cy="139.0" r="7.5" opacity="0.025"/>
+    <circle cx="762.2" cy="71.5" r="12.0" opacity="0.028"/>
+    <circle cx="573.6" cy="282.9" r="10.2" opacity="0.027"/>
+    <circle cx="880.5" cy="-1.7" r="10.2" opacity="0.069"/>
+    <circle cx="1069.4" cy="204.4" r="8.6" opacity="0.038"/>
+    <circle cx="658.6" cy="227.8" r="10.2" opacity="0.059"/>
+    <circle cx="754.5" cy="58.7" r="11.9" opacity="0.069"/>
+    <circle cx="1063.1" cy="238.3" r="11.9" opacity="0.057"/>
+    <circle cx="693.8" cy="149.4" r="9.1" opacity="0.021"/>
+    <circle cx="576.5" cy="76.1" r="8.6" opacity="0.055"/>
+    </g>
+  </g>
+  <rect x="1.44" y="1.44" width="1149.12" height="285.12" rx="18.72" fill="none" stroke="#26385a" stroke-width="2.88"/>
+  <text x="60" y="104" font-size="58" font-weight="600" fill="#f4f7fb">Brain Tumor <tspan fill="#a2c8ec">MRI</tspan></text>
+  <text x="60" y="166" font-size="58" font-weight="600" fill="#f4f7fb">Classification</text>
+  <text x="60" y="202" font-size="15" fill="#aebbd0">CNN Scratch <tspan fill="#ff800e">vs</tspan> CNN Modified <tspan fill="#ff800e">vs</tspan> EfficientNet-B0 &#183; 5-Fold Cross Validation</text>
+  <rect x="60.0" y="220" width="77.1" height="24" rx="12" fill="#a2c8ec" fill-opacity="0.08" stroke="#33496f" stroke-width="1.2"/><circle cx="74.0" cy="232.0" r="4" fill="#ff800e"/><text x="85.0" y="236.5" font-size="12.5" font-weight="600" fill="#f4f7fb">glioma</text>
+  <rect x="145.1" y="220" width="109.4" height="24" rx="12" fill="#a2c8ec" fill-opacity="0.08" stroke="#33496f" stroke-width="1.2"/><circle cx="159.1" cy="232.0" r="4" fill="#e9a3ab"/><text x="170.1" y="236.5" font-size="12.5" font-weight="600" fill="#f4f7fb">meningioma</text>
+  <rect x="262.5" y="220" width="87.7" height="24" rx="12" fill="#a2c8ec" fill-opacity="0.08" stroke="#33496f" stroke-width="1.2"/><circle cx="276.5" cy="232.0" r="4" fill="#a2c8ec"/><text x="287.5" y="236.5" font-size="12.5" font-weight="600" fill="#f4f7fb">notumor</text>
+  <rect x="358.2" y="220" width="85.9" height="24" rx="12" fill="#a2c8ec" fill-opacity="0.08" stroke="#33496f" stroke-width="1.2"/><circle cx="372.2" cy="232.0" r="4" fill="#8d7bc0"/><text x="383.2" y="236.5" font-size="12.5" font-weight="600" fill="#f4f7fb">pituitary</text>
+  <line x1="458.1" y1="225" x2="458.1" y2="239" stroke="#33496f" stroke-width="1.4"/>
+  <rect x="472.1" y="220" width="68.0" height="24" rx="12" fill="none" stroke="#33496f" stroke-width="1.2" stroke-dasharray="3 3"/><text x="484.1" y="236.5" font-size="12.5" fill="#aebbd0">PyTorch</text>
+  <rect x="548.1" y="220" width="61.9" height="24" rx="12" fill="none" stroke="#33496f" stroke-width="1.2" stroke-dasharray="3 3"/><text x="560.1" y="236.5" font-size="12.5" fill="#aebbd0">Kaggle</text>
+  <g>
+    <rect x="640" y="84" width="116" height="116" rx="12" fill="#0c1628" stroke="#33496f" stroke-width="1.6"/>
+    <ellipse cx="698.0" cy="142.0" rx="47" ry="55" fill="none" stroke="#aebbd0" stroke-opacity="0.55" stroke-width="3"/>
+    <ellipse cx="698.0" cy="142.0" rx="42" ry="50" fill="url(#brain)"/>
+    <path d="M 668.8 112.0 A 9 6.3 0 0 0 683.2 112.0 M 657.6 132.0 A 8 5.6 0 0 1 670.4 132.0 M 658.6 156.0 A 8 5.6 0 0 0 671.4 156.0 M 670.8 175.0 A 9 6.3 0 0 1 685.2 175.0 M 681.2 140.0 A 6 4.199999999999999 0 0 0 690.8 140.0 M 712.8 112.0 A 9 6.3 0 0 1 727.2 112.0 M 725.6 132.0 A 8 5.6 0 0 0 738.4 132.0 M 724.6 156.0 A 8 5.6 0 0 1 737.4 156.0 M 710.8 175.0 A 9 6.3 0 0 0 725.2 175.0 M 705.2 140.0 A 6 4.199999999999999 0 0 1 714.8 140.0" fill="none" stroke="#0c1628" stroke-opacity="0.45" stroke-width="1.6" stroke-linecap="round"/>
+    <line x1="698.0" y1="92.0" x2="698.0" y2="192.0" stroke="#0c1628" stroke-opacity="0.6" stroke-width="1.6"/>
+    <path d="M 696.0 128.0 C 684.0 126.0, 685.0 146.0, 695.0 152.0 Z
+             M 700.0 128.0 C 712.0 126.0, 711.0 146.0, 701.0 152.0 Z" fill="#0c1628" fill-opacity="0.7"/>
+    <ellipse cx="717.0" cy="127.0" rx="9" ry="7.5" fill="url(#tumor)"/>
+    <ellipse cx="717.0" cy="127.0" rx="14" ry="12" fill="none" stroke="#ff800e" stroke-width="2"
+             stroke-dasharray="5 3.5"/>
+  </g>
+  <text x="698.0" y="222" text-anchor="middle" font-size="12.5" fill="#aebbd0">MRI slice</text>
+  <line x1="766" y1="142" x2="784" y2="142" stroke="#ff800e" stroke-opacity="0.9" stroke-width="2.2" stroke-linecap="round"/><path d="M 790 142 L 782 137 L 782 147 Z" fill="#ff800e"/>
+  <path d="M 800 103.0 L 814 89.0 L 824 89.0 L 824 181.0 L 810 195.0 L 800 195.0 Z" fill="#a2c8ec" fill-opacity="0.30" stroke="#a2c8ec" stroke-opacity="0.85" stroke-width="1.3" stroke-linejoin="round"/><path d="M 800 103.0 L 810 103.0 L 810 195.0 M 810 103.0 L 824 89.0" fill="none" stroke="#a2c8ec" stroke-opacity="0.85" stroke-width="1.3" stroke-linejoin="round"/>
+  <path d="M 833 111.0 L 847 97.0 L 857 97.0 L 857 173.0 L 843 187.0 L 833 187.0 Z" fill="#b3c3ea" fill-opacity="0.28" stroke="#b3c3ea" stroke-opacity="0.8" stroke-width="1.3" stroke-linejoin="round"/><path d="M 833 111.0 L 843 111.0 L 843 187.0 M 843 111.0 L 857 97.0" fill="none" stroke="#b3c3ea" stroke-opacity="0.8" stroke-width="1.3" stroke-linejoin="round"/>
+  <path d="M 866 119.0 L 880 105.0 L 892 105.0 L 892 165.0 L 878 179.0 L 866 179.0 Z" fill="#8d7bc0" fill-opacity="0.30" stroke="#8d7bc0" stroke-opacity="0.85" stroke-width="1.3" stroke-linejoin="round"/><path d="M 866 119.0 L 878 119.0 L 878 179.0 M 878 119.0 L 892 105.0" fill="none" stroke="#8d7bc0" stroke-opacity="0.85" stroke-width="1.3" stroke-linejoin="round"/>
+  <path d="M 901 127.0 L 915 113.0 L 929 113.0 L 929 157.0 L 915 171.0 L 901 171.0 Z" fill="#8d7bc0" fill-opacity="0.24" stroke="#8d7bc0" stroke-opacity="0.7" stroke-width="1.3" stroke-linejoin="round"/><path d="M 901 127.0 L 915 127.0 L 915 171.0 M 915 127.0 L 929 113.0" fill="none" stroke="#8d7bc0" stroke-opacity="0.7" stroke-width="1.3" stroke-linejoin="round"/>
+  <path d="M 938 134.0 L 952 120.0 L 968 120.0 L 968 150.0 L 954 164.0 L 938 164.0 Z" fill="#e4b5de" fill-opacity="0.28" stroke="#e4b5de" stroke-opacity="0.8" stroke-width="1.3" stroke-linejoin="round"/><path d="M 938 134.0 L 954 134.0 L 954 164.0 M 954 134.0 L 968 120.0" fill="none" stroke="#e4b5de" stroke-opacity="0.8" stroke-width="1.3" stroke-linejoin="round"/>
+  <text x="884.0" y="222" text-anchor="middle" font-size="12.5" fill="#aebbd0">CNN layers</text>
+  <line x1="978" y1="142" x2="994" y2="142" stroke="#ff800e" stroke-opacity="0.9" stroke-width="2.2" stroke-linecap="round"/><path d="M 1000 142 L 992 137 L 992 147 Z" fill="#ff800e"/>
+  <rect x="1010" y="90" width="100" height="104" rx="12" fill="#f6e9ec" fill-opacity="0.06" stroke="#33496f" stroke-width="1.6"/>
+  <rect x="1022" y="106" width="76" height="10" rx="5" fill="#0c1628"/><rect x="1022" y="106" width="65.4" height="10" rx="5" fill="#ff800e"/>
+  <rect x="1022" y="126" width="76" height="10" rx="5" fill="#0c1628"/><rect x="1022" y="126" width="24.3" height="10" rx="5" fill="#e9a3ab"/>
+  <rect x="1022" y="146" width="76" height="10" rx="5" fill="#0c1628"/><rect x="1022" y="146" width="13.7" height="10" rx="5" fill="#a2c8ec"/>
+  <rect x="1022" y="166" width="76" height="10" rx="5" fill="#0c1628"/><rect x="1022" y="166" width="9.1" height="10" rx="5" fill="#8d7bc0"/>
+  <text x="1060.0" y="222" text-anchor="middle" font-size="12.5" fill="#aebbd0">4-class softmax</text>
+</svg>

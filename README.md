@@ -353,5 +353,4 @@ sering tertukar) → Kesimpulan → Referensi (IEEE).
 ## Referensi
 
 [1] M. Tan and Q. V. Le, "EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks," in *Proc. ICML*,
-2019. [arXiv:1905.11946](https://arxiv.org/abs/1905.11946)#   B r a i n T u m o r C l a s s i f i c a t i o n - D e m o  
- 
+1.    [arXiv:1905.11946](https://arxiv.org/abs/1905.11946)
