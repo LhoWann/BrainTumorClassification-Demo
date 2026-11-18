@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1152" height="650" viewBox="0 0 1152 650" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, 'DejaVu Sans', sans-serif">
+  <title>Arsitektur 3 model</title>
+  <defs>
+    <clipPath id="card"><rect x="1.44" y="1.44" width="1149.12" height="647.12" rx="18.72"/></clipPath>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="0.35">
+      <stop offset="0" stop-color="#091122"/><stop offset="0.45" stop-color="#101b33"/>
+      <stop offset="1" stop-color="#1b2c51"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.15" r="0.55">
+      <stop offset="0" stop-color="#26385a" stop-opacity="0.55"/><stop offset="1" stop-color="#26385a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <g clip-path="url(#card)">
+    <rect width="1152" height="650" fill="url(#bg)"/>
+    <rect width="1152" height="650" fill="url(#glow)"/>
+  </g>
+  <rect x="1.44" y="1.44" width="1149.12" height="647.12" rx="18.72" fill="none" stroke="#26385a" stroke-width="2.88"/>
+
+  <text x="30" y="52" font-size="26" font-weight="600" fill="#f4f7fb">Arsitektur <tspan fill="#a2c8ec">3 Model</tspan></text>
+  <text x="30" y="80" font-size="14" fill="#aebbd0">Input 3×224×224, output 4 logit (satu per kelas). Ukuran tensor ditulis C×H×W.</text>
+  <g font-size="12.5" fill="#aebbd0">
+    <circle cx="706" cy="47" r="5" fill="#a2c8ec"/><text x="717" y="51.5">layer dasar</text>
+    <circle cx="812" cy="47" r="5" fill="#ff800e"/><text x="823" y="51.5">baru / diganti</text>
+    <circle cx="930" cy="47" r="5" fill="#8d7bc0"/><text x="941" y="51.5">bobot pretrained ImageNet</text>
+  </g>
+
+  <!-- ===== cnn_scratch ===== -->
+  <rect x="30" y="100" width="352" height="520" rx="14" fill="#0c1628" stroke="#33496f" stroke-width="1.4"/>
+  <text x="50" y="134" font-size="18" font-weight="600" fill="#f4f7fb">cnn_scratch</text>
+  <g font-size="12.5" fill="#f4f7fb">
+    <rect x="50" y="148" width="131" height="24" rx="12" fill="#a2c8ec" fill-opacity="0.08" stroke="#33496f" stroke-width="1.2"/><text x="62" y="164.5">224 rb parameter</text>
+    <rect x="189" y="148" width="64" height="24" rx="12" fill="none" stroke="#33496f" stroke-width="1.2" stroke-dasharray="3 3"/><text x="201" y="164.5" fill="#aebbd0">AdamW</text>
+  </g>
+  <g stroke="#33496f" stroke-width="1.4">
+    <line x1="206" y1="224" x2="206" y2="232"/><line x1="206" y1="266" x2="206" y2="274"/><line x1="206" y1="308" x2="206" y2="316"/>
+    <line x1="206" y1="350" x2="206" y2="358"/><line x1="206" y1="392" x2="206" y2="400"/><line x1="206" y1="434" x2="206" y2="442"/>
+  </g>
+  <rect x="50" y="190" width="312" height="34" rx="9" fill="none" stroke="#33496f" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <g fill="#a2c8ec" fill-opacity="0.10" stroke="#33496f" stroke-width="1.2">
+    <rect x="50" y="232" width="312" height="34" rx="9"/><rect x="50" y="274" width="312" height="34" rx="9"/><rect x="50" y="316" width="312" height="34" rx="9"/>
+    <rect x="50" y="358" width="312" height="34" rx="9"/><rect x="50" y="400" width="312" height="34" rx="9"/>
+  </g>
+  <rect x="50" y="442" width="312" height="34" rx="9" fill="none" stroke="#33496f" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <g fill="#a2c8ec"><circle cx="64" cy="249" r="4"/><circle cx="64" cy="291" r="4"/><circle cx="64" cy="333" r="4"/><circle cx="64" cy="375" r="4"/><circle cx="64" cy="417" r="4"/></g>
+  <g font-size="12.5" fill="#f4f7fb">
+    <text x="64" y="211.5" fill="#aebbd0">Input</text>
+    <text x="76" y="253.5">Conv3×3 · ReLU · MaxPool</text>
+    <text x="76" y="295.5">Conv3×3 · ReLU · MaxPool</text>
+    <text x="76" y="337.5">Conv3×3 · ReLU · MaxPool</text>
+    <text x="76" y="379.5">Flatten</text>
+    <text x="76" y="421.5">Linear 50.176 → 4</text>
+    <text x="64" y="463.5" fill="#aebbd0">Output</text>
+  </g>
+  <g font-size="12" fill="#a2c8ec" text-anchor="end">
+    <text x="348" y="211.5">3×224×224</text><text x="348" y="253.5">16×112×112</text><text x="348" y="295.5">32×56×56</text>
+    <text x="348" y="337.5">64×28×28</text><text x="348" y="379.5">50.176</text><text x="348" y="421.5">≈200 rb param</text>
+    <text x="348" y="463.5">4 logit</text>
+  </g>
+  <line x1="50" y1="568" x2="362" y2="568" stroke="#26385a" stroke-width="1.2"/>
+  <text x="50" y="590" font-size="12.5" fill="#aebbd0">Baseline: tanpa BatchNorm dan dropout.</text>
+  <text x="50" y="608" font-size="12.5" fill="#aebbd0">Sekitar 90% parameter ada di layer Linear.</text>
+
+  <!-- ===== cnn_modified ===== -->
+  <rect x="400" y="100" width="352" height="520" rx="14" fill="#0c1628" stroke="#33496f" stroke-width="1.4"/>
+  <text x="420" y="134" font-size="18" font-weight="600" fill="#f4f7fb">cnn_modified</text>
+  <g font-size="12.5" fill="#f4f7fb">
+    <rect x="420" y="148" width="131" height="24" rx="12" fill="#a2c8ec" fill-opacity="0.08" stroke="#33496f" stroke-width="1.2"/><text x="432" y="164.5">390 rb parameter</text>
+    <rect x="559" y="148" width="116" height="24" rx="12" fill="none" stroke="#ff800e" stroke-opacity="0.7" stroke-width="1.2" stroke-dasharray="3 3"/><text x="571" y="164.5" fill="#aebbd0">Muon + AdamW</text>
+  </g>
+  <g stroke="#33496f" stroke-width="1.4">
+    <line x1="576" y1="224" x2="576" y2="232"/><line x1="576" y1="266" x2="576" y2="274"/><line x1="576" y1="308" x2="576" y2="316"/>
+    <line x1="576" y1="350" x2="576" y2="358"/><line x1="576" y1="392" x2="576" y2="400"/><line x1="576" y1="434" x2="576" y2="442"/>
+    <line x1="576" y1="476" x2="576" y2="484"/><line x1="576" y1="518" x2="576" y2="526"/>
+  </g>
+  <rect x="420" y="190" width="312" height="34" rx="9" fill="none" stroke="#33496f" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <g fill="#ff800e" fill-opacity="0.08" stroke="#ff800e" stroke-opacity="0.55" stroke-width="1.2">
+    <rect x="420" y="232" width="312" height="34" rx="9"/><rect x="420" y="274" width="312" height="34" rx="9"/><rect x="420" y="316" width="312" height="34" rx="9"/>
+    <rect x="420" y="358" width="312" height="34" rx="9"/><rect x="420" y="400" width="312" height="34" rx="9"/><rect x="420" y="442" width="312" height="34" rx="9"/>
+  </g>
+  <rect x="420" y="484" width="312" height="34" rx="9" fill="#a2c8ec" fill-opacity="0.10" stroke="#33496f" stroke-width="1.2"/>
+  <rect x="420" y="526" width="312" height="34" rx="9" fill="none" stroke="#33496f" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <g fill="#ff800e"><circle cx="434" cy="249" r="4"/><circle cx="434" cy="291" r="4"/><circle cx="434" cy="333" r="4"/><circle cx="434" cy="375" r="4"/><circle cx="434" cy="417" r="4"/><circle cx="434" cy="459" r="4"/></g>
+  <circle cx="434" cy="501" r="4" fill="#a2c8ec"/>
+  <g font-size="12.5" fill="#f4f7fb">
+    <text x="434" y="211.5" fill="#aebbd0">Input</text>
+    <text x="446" y="253.5">Conv3×3 · BN · ReLU · MaxPool</text>
+    <text x="446" y="295.5">Conv3×3 · BN · ReLU · MaxPool</text>
+    <text x="446" y="337.5">Conv3×3 · BN · ReLU · MaxPool</text>
+    <text x="446" y="379.5">Blok 4: Conv · BN · ReLU · Pool</text>
+    <text x="446" y="421.5">Global Average Pooling</text>
+    <text x="446" y="463.5">Dropout (p dari tuning)</text>
+    <text x="446" y="505.5">Linear 256 → 4</text>
+    <text x="434" y="547.5" fill="#aebbd0">Output</text>
+  </g>
+  <g font-size="12" fill="#a2c8ec" text-anchor="end">
+    <text x="718" y="211.5">3×224×224</text><text x="718" y="253.5">32×112×112</text><text x="718" y="295.5">64×56×56</text>
+    <text x="718" y="337.5">128×28×28</text><text x="718" y="379.5">256×14×14</text><text x="718" y="421.5">256</text>
+    <text x="718" y="463.5">256</text><text x="718" y="505.5">4</text><text x="718" y="547.5">4 logit</text>
+  </g>
+  <line x1="420" y1="568" x2="732" y2="568" stroke="#26385a" stroke-width="1.2"/>
+  <text x="420" y="590" font-size="12.5" fill="#aebbd0"><tspan fill="#ff800e" font-weight="600">Muon:</tspan> bobot filter 4 layer Conv.</text>
+  <text x="420" y="608" font-size="12.5" fill="#aebbd0"><tspan fill="#f4f7fb" font-weight="600">AdamW:</tspan> bias, BatchNorm, Linear output.</text>
+
+  <!-- ===== efficientnet_b0 ===== -->
+  <rect x="770" y="100" width="352" height="520" rx="14" fill="#0c1628" stroke="#33496f" stroke-width="1.4"/>
+  <text x="790" y="134" font-size="18" font-weight="600" fill="#f4f7fb">efficientnet_b0</text>
+  <g font-size="12.5" fill="#f4f7fb">
+    <rect x="790" y="148" width="131" height="24" rx="12" fill="#a2c8ec" fill-opacity="0.08" stroke="#33496f" stroke-width="1.2"/><text x="802" y="164.5">4,0 jt parameter</text>
+    <rect x="929" y="148" width="64" height="24" rx="12" fill="none" stroke="#33496f" stroke-width="1.2" stroke-dasharray="3 3"/><text x="941" y="164.5" fill="#aebbd0">AdamW</text>
+  </g>
+  <g stroke="#33496f" stroke-width="1.4">
+    <line x1="946" y1="224" x2="946" y2="232"/><line x1="946" y1="266" x2="946" y2="274"/><line x1="946" y1="308" x2="946" y2="316"/>
+    <line x1="946" y1="350" x2="946" y2="358"/><line x1="946" y1="392" x2="946" y2="400"/><line x1="946" y1="434" x2="946" y2="442"/>
+    <line x1="946" y1="476" x2="946" y2="484"/>
+  </g>
+  <rect x="790" y="190" width="312" height="34" rx="9" fill="none" stroke="#33496f" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <g fill="#8d7bc0" fill-opacity="0.16" stroke="#8d7bc0" stroke-opacity="0.6" stroke-width="1.2">
+    <rect x="790" y="232" width="312" height="34" rx="9"/><rect x="790" y="274" width="312" height="34" rx="9"/>
+    <rect x="790" y="316" width="312" height="34" rx="9"/><rect x="790" y="358" width="312" height="34" rx="9"/>
+  </g>
+  <g fill="#ff800e" fill-opacity="0.08" stroke="#ff800e" stroke-opacity="0.55" stroke-width="1.2">
+    <rect x="790" y="400" width="312" height="34" rx="9"/><rect x="790" y="442" width="312" height="34" rx="9"/>
+  </g>
+  <rect x="790" y="484" width="312" height="34" rx="9" fill="none" stroke="#33496f" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <g fill="#8d7bc0"><circle cx="804" cy="249" r="4"/><circle cx="804" cy="291" r="4"/><circle cx="804" cy="333" r="4"/><circle cx="804" cy="375" r="4"/></g>
+  <g fill="#ff800e"><circle cx="804" cy="417" r="4"/><circle cx="804" cy="459" r="4"/></g>
+  <g font-size="12.5" fill="#f4f7fb">
+    <text x="804" y="211.5" fill="#aebbd0">Input</text>
+    <text x="816" y="253.5">Stem: Conv3×3 s2 · BN · SiLU</text>
+    <text x="816" y="295.5">16 blok MBConv (7 tahap)</text>
+    <text x="816" y="337.5">Conv1×1 · BN · SiLU</text>
+    <text x="816" y="379.5">Global Average Pooling</text>
+    <text x="816" y="421.5">Dropout (p dari tuning)</text>
+    <text x="816" y="463.5">Linear 1280 → 4</text>
+    <text x="804" y="505.5" fill="#aebbd0">Output</text>
+  </g>
+  <g font-size="12" fill="#a2c8ec" text-anchor="end">
+    <text x="1088" y="211.5">3×224×224</text><text x="1088" y="253.5">32×112×112</text><text x="1088" y="295.5">320×7×7</text>
+    <text x="1088" y="337.5">1280×7×7</text><text x="1088" y="379.5">1280</text><text x="1088" y="421.5">1280</text>
+    <text x="1088" y="463.5">4</text><text x="1088" y="505.5">4 logit</text>
+  </g>
+  <line x1="790" y1="568" x2="1102" y2="568" stroke="#26385a" stroke-width="1.2"/>
+  <text x="790" y="590" font-size="12.5" fill="#aebbd0">Transfer learning: classifier diganti,</text>
+  <text x="790" y="608" font-size="12.5" fill="#aebbd0">semua layer tetap ikut dilatih.</text>
+</svg>

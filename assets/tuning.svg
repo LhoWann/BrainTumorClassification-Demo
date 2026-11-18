@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1152" height="536" viewBox="0 0 1152 536" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, 'DejaVu Sans', sans-serif">
+  <title>Tuning hyperparameter dengan Optuna</title>
+  <defs>
+    <clipPath id="card"><rect x="1.44" y="1.44" width="1149.12" height="533.12" rx="18.72"/></clipPath>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="0.35">
+      <stop offset="0" stop-color="#091122"/><stop offset="0.45" stop-color="#101b33"/>
+      <stop offset="1" stop-color="#1b2c51"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.2" r="0.55">
+      <stop offset="0" stop-color="#26385a" stop-opacity="0.55"/><stop offset="1" stop-color="#26385a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <g clip-path="url(#card)">
+    <rect width="1152" height="536" fill="url(#bg)"/>
+    <rect width="1152" height="536" fill="url(#glow)"/>
+  </g>
+  <rect x="1.44" y="1.44" width="1149.12" height="533.12" rx="18.72" fill="none" stroke="#26385a" stroke-width="2.88"/>
+
+  <text x="30" y="52" font-size="26" font-weight="600" fill="#f4f7fb">Tuning <tspan fill="#a2c8ec">Optuna</tspan> + Pruning</text>
+  <text x="30" y="80" font-size="14" fill="#aebbd0">python -m src.tuning: sampler TPE + MedianPruner, 20 trial per model, hanya fold 1. Data Testing <tspan fill="#ff800e">tidak</tspan> dipakai.</text>
+
+  <!-- loop arc: next epoch -->
+  <path d="M 576 124 L 576 108 L 352 108 L 352 116" fill="none" stroke="#ff800e" stroke-opacity="0.9" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M 352 125 L 347 116 L 357 116 Z" fill="#ff800e"/>
+  <rect x="380" y="96" width="168" height="24" rx="12" fill="#101b33" stroke="#33496f" stroke-width="1.2"/>
+  <text x="464" y="112.5" text-anchor="middle" font-size="12.5" fill="#aebbd0">lolos → epoch berikutnya</text>
+
+  <!-- step cards -->
+  <g fill="#0c1628" stroke="#33496f" stroke-width="1.4">
+    <rect x="30" y="126" width="196" height="120" rx="14"/><rect x="254" y="126" width="196" height="120" rx="14"/>
+    <rect x="478" y="126" width="196" height="120" rx="14"/><rect x="702" y="126" width="196" height="120" rx="14"/>
+    <rect x="926" y="126" width="196" height="120" rx="14"/>
+  </g>
+  <circle cx="60" cy="158" r="13" fill="#a2c8ec"/><circle cx="284" cy="158" r="13" fill="#ff800e"/>
+  <circle cx="508" cy="158" r="13" fill="#e9a3ab"/><circle cx="732" cy="158" r="13" fill="#8d7bc0"/>
+  <circle cx="956" cy="158" r="13" fill="#e4b5de"/>
+  <g font-size="13" font-weight="700" fill="#091122" text-anchor="middle">
+    <text x="60" y="162.5">1</text><text x="284" y="162.5">2</text><text x="508" y="162.5">3</text>
+    <text x="732" y="162.5">4</text><text x="956" y="162.5">5</text>
+  </g>
+  <g font-size="15" font-weight="600" fill="#f4f7fb">
+    <text x="82" y="163">Trial baru</text><text x="306" y="163">Latih 1 epoch</text><text x="530" y="163">MedianPruner</text>
+    <text x="754" y="163">Skor trial</text><text x="978" y="163">Simpan</text>
+  </g>
+  <g font-size="12" fill="#aebbd0">
+    <text x="48" y="192">TPE memilih kombinasi</text>
+    <text x="48" y="210">hyperparameter baru</text>
+    <text x="48" y="228">dari ruang pencarian</text>
+    <text x="272" y="192">fold 1: train 4/5, valid 1/5</text>
+    <text x="272" y="210">maks 12 epoch per trial</text>
+    <text x="272" y="228">lapor val acc ke Optuna</text>
+    <text x="496" y="192">val acc di bawah median</text>
+    <text x="496" y="210">trial lain di epoch sama?</text>
+    <text x="496" y="228"><tspan fill="#e9a3ab">ya</tspan> → trial dipangkas</text>
+    <text x="720" y="192">selesai 12 epoch / early stop</text>
+    <text x="720" y="210">skor = val acc di epoch</text>
+    <text x="720" y="228">dengan val loss terendah</text>
+    <text x="944" y="192">optuna.db (bisa dilanjut)</text>
+    <text x="944" y="210">best_params.json</text>
+    <text x="944" y="228">→ dibaca otomatis main.py</text>
+  </g>
+  <g stroke="#ff800e" stroke-opacity="0.9" stroke-width="2.2" stroke-linecap="round">
+    <line x1="229" y1="186" x2="243" y2="186"/><line x1="453" y1="186" x2="467" y2="186"/>
+    <line x1="677" y1="186" x2="691" y2="186"/><line x1="901" y1="186" x2="915" y2="186"/>
+  </g>
+  <g fill="#ff800e">
+    <path d="M 251 186 L 243 181 L 243 191 Z"/><path d="M 475 186 L 467 181 L 467 191 Z"/>
+    <path d="M 699 186 L 691 181 L 691 191 Z"/><path d="M 923 186 L 915 181 L 915 191 Z"/>
+  </g>
+
+  <!-- pruned branch -->
+  <line x1="576" y1="248" x2="576" y2="262" stroke="#e9a3ab" stroke-width="2" stroke-linecap="round"/>
+  <path d="M 576 269 L 571 261 L 581 261 Z" fill="#e9a3ab"/>
+  <rect x="456" y="270" width="240" height="26" rx="13" fill="#e9a3ab" fill-opacity="0.14" stroke="#e9a3ab" stroke-opacity="0.7" stroke-width="1.2"/>
+  <text x="576" y="287.5" text-anchor="middle" font-size="12.5" fill="#f4f7fb"><tspan font-weight="700" fill="#e9a3ab">PRUNED</tspan> · dihentikan lebih awal</text>
+  <text x="444" y="287.5" text-anchor="end" font-size="12" fill="#aebbd0">aktif mulai epoch 3, setelah 5 trial selesai</text>
+
+  <!-- next trial loop -->
+  <path d="M 800 248 L 800 330 L 128 330 L 128 257" fill="none" stroke="#ff800e" stroke-opacity="0.9" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M 128 248 L 123 257 L 133 257 Z" fill="#ff800e"/>
+  <line x1="576" y1="296" x2="576" y2="330" stroke="#e9a3ab" stroke-width="2"/>
+  <rect x="222" y="318" width="250" height="24" rx="12" fill="#101b33" stroke="#33496f" stroke-width="1.2"/>
+  <text x="347" y="334.5" text-anchor="middle" font-size="12.5" fill="#aebbd0">trial berikutnya (total 20 per model)</text>
+
+  <!-- search space -->
+  <rect x="30" y="360" width="380" height="150" rx="14" fill="#0c1628" stroke="#33496f" stroke-width="1.4"/>
+  <text x="50" y="386" font-size="13.5" font-weight="600" fill="#f4f7fb">Ruang pencarian</text>
+  <g font-size="12.5" fill="#f4f7fb">
+    <text x="50" y="412">lr</text><text x="50" y="432">weight_decay</text><text x="50" y="452">label_smoothing</text>
+    <text x="50" y="472">muon_lr</text><text x="50" y="492">dropout</text>
+  </g>
+  <g font-size="12.5" fill="#aebbd0">
+    <text x="172" y="412">1e-5 – 3e-3 (log)</text><text x="172" y="432">1e-5 – 1e-1 (log)</text><text x="172" y="452">0 – 0.2</text>
+    <text x="172" y="472">1e-3 – 1e-1 (log)</text><text x="172" y="492">0 – 0.5</text>
+  </g>
+  <g font-size="12" fill="#a2c8ec" text-anchor="end">
+    <text x="390" y="412">semua</text><text x="390" y="432">semua</text><text x="390" y="452">semua</text>
+    <text x="390" y="472">cnn_modified</text><text x="390" y="492">kecuali cnn_scratch</text>
+  </g>
+
+  <!-- results -->
+  <rect x="430" y="360" width="420" height="150" rx="14" fill="#0c1628" stroke="#33496f" stroke-width="1.4"/>
+  <text x="450" y="386" font-size="13.5" font-weight="600" fill="#f4f7fb">Hasil tuning</text>
+  <text x="830" y="386" text-anchor="end" font-size="12" fill="#aebbd0">val acc terbaik (fold 1)</text>
+  <g font-size="12.5" font-weight="600" fill="#f4f7fb">
+    <text x="450" y="416">cnn_scratch</text><text x="450" y="446">cnn_modified</text><text x="450" y="476">efficientnet_b0</text>
+  </g>
+  <g fill="#a2c8ec" fill-opacity="0.85">
+    <rect x="560" y="404" width="70" height="16" rx="4"/><rect x="560" y="434" width="70" height="16" rx="4"/><rect x="560" y="464" width="100" height="16" rx="4"/>
+  </g>
+  <g fill="#e9a3ab" fill-opacity="0.55">
+    <rect x="632" y="404" width="128" height="16" rx="4"/><rect x="632" y="434" width="128" height="16" rx="4"/><rect x="662" y="464" width="98" height="16" rx="4"/>
+  </g>
+  <g font-size="11" font-weight="700" fill="#091122" text-anchor="middle">
+    <text x="595" y="416">7</text><text x="696" y="416">13</text>
+    <text x="595" y="446">7</text><text x="696" y="446">13</text>
+    <text x="610" y="476">10</text><text x="711" y="476">10</text>
+  </g>
+  <g font-size="13" font-weight="700" fill="#a2c8ec" text-anchor="end">
+    <text x="830" y="416">0.932</text><text x="830" y="446">0.914</text><text x="830" y="476">0.992</text>
+  </g>
+  <rect x="450" y="490" width="10" height="10" rx="2" fill="#a2c8ec" fill-opacity="0.85"/>
+  <text x="466" y="499" font-size="11.5" fill="#aebbd0">selesai</text>
+  <rect x="520" y="490" width="10" height="10" rx="2" fill="#e9a3ab" fill-opacity="0.55"/>
+  <text x="536" y="499" font-size="11.5" fill="#aebbd0">dipangkas  (angka = jumlah trial)</text>
+
+  <!-- outputs -->
+  <rect x="870" y="360" width="252" height="150" rx="14" fill="#0c1628" stroke="#33496f" stroke-width="1.4"/>
+  <text x="890" y="386" font-size="13.5" font-weight="600" fill="#a2c8ec">outputs/tuning/</text>
+  <g font-size="12.5" fill="#aebbd0">
+    <text x="890" y="412">optuna.db (SQLite)</text>
+    <text x="890" y="432">best_params.json</text>
+    <text x="890" y="452">&lt;model&gt;_trials.md</text>
+    <text x="890" y="472">&lt;model&gt;_history.png</text>
+    <text x="890" y="492">&lt;model&gt;_importance.png</text>
+  </g>
+</svg>

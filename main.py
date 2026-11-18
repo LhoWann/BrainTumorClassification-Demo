@@ -1,12 +1,17 @@
-"""Pipeline lengkap: baca data/ -> preprocessing -> 5-fold CV untuk 3 model -> evaluasi -> grafik & tabel hasil.
+"""Pipeline lengkap: baca data/ -> preprocessing -> 5-fold CV untuk 3 model -> evaluasi -> grafik, tabel, bobot model.
 
-Jalankan: python main.py                                  (semua model, pengaturan dari src/config.py)
+Bobot terbaik tiap fold disimpan di outputs/models/<model>/fold<k>.pt (tidak ikut di-push, lihat .gitignore).
+
+Jalankan: python -m src.tuning                            (opsional, cari hyperparameter terbaik dulu)
+          python main.py                                  (semua model, pakai hasil tuning jika ada)
           python main.py --epochs 1                       (uji cepat)
           python main.py --models cnn_scratch cnn_modified (hanya model tertentu)
 """
 
 import argparse
+import json
 import random
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -14,22 +19,24 @@ import torch
 from torch.utils.data import DataLoader, Dataset, Subset
 
 from src.config import Config
-from src.data.dataset import ImageDataset, find_classes, list_images, make_folds
+from src.data.dataset import ImageDataset, load_dataset, make_folds, make_loader
 from src.data.preprocess import eval_transform, load_images, train_transform
 from src.evaluation.metrics import METRIC_NAMES, compute_metrics, summarize
 from src.evaluation.plots import plot_comparison, plot_confusion_matrix, plot_history, plot_preprocessing, plot_roc
 from src.models import MODEL_NAMES, build_model
-from src.training.trainer import predict, train_fold
+from src.training.trainer import get_device, predict, train_fold
 
 Folds = list[tuple[np.ndarray, np.ndarray]]
+TUNED = ("lr", "muon_lr", "weight_decay", "label_smoothing", "dropout")
+FOLD_COLUMNS = ("best_epoch", "train_acc", "val_acc", *METRIC_NAMES)
 
 
-def make_loader(dataset: Dataset, cfg: Config, train: bool = False) -> DataLoader:
-    """DataLoader dari config. Data train diacak dan batch terakhir yang tidak penuh dibuang (aman untuk BatchNorm).
-
-    Tanpa worker tambahan: gambar sudah ada di RAM, dan di Windows tiap worker memuat ulang torch (boros RAM).
-    """
-    return DataLoader(dataset, cfg.batch_size, shuffle=train, drop_last=train, pin_memory=cfg.device == "cuda")
+def used_params(name: str, cfg: Config) -> tuple[str, ...]:
+    """Hyperparameter yang benar-benar dipakai model ini (cnn_scratch tanpa dropout, muon_lr hanya untuk Muon)."""
+    unused = {"muon_lr"} if name not in cfg.muon_models else set()
+    if name == "cnn_scratch":
+        unused.add("dropout")
+    return tuple(k for k in TUNED if k not in unused)
 
 
 def cross_validate(
@@ -39,30 +46,36 @@ def cross_validate(
 
     Args:
         name: Nama model (lihat MODEL_NAMES).
-        cfg: Konfigurasi eksperimen.
+        cfg: Konfigurasi eksperimen (sudah berisi hyperparameter model ini).
         classes: Nama kelas.
         sets: Dataset Training dengan augmentasi (untuk train) dan tanpa augmentasi (untuk valid).
         folds: Indeks train/valid setiap fold.
         test_loader: Data Testing.
 
     Returns:
-        Metrik test setiap fold.
+        Per fold: epoch terbaik, akurasi train/valid pada epoch itu, dan metrik test.
     """
-    device = torch.device(cfg.device)
-    fig_dir = cfg.output_dir / "figures" / name
+    device, use_muon = torch.device(cfg.device), name in cfg.muon_models
+    fig_dir, model_dir = cfg.output_dir / "figures" / name, cfg.output_dir / "models" / name
     fig_dir.mkdir(parents=True, exist_ok=True)
+    model_dir.mkdir(parents=True, exist_ok=True)
+    optimizer = "Muon (hidden layer) + AdamW" if use_muon else "AdamW"
+    print(f"\n##### {name} | {optimizer} | " + ", ".join(f"{k}={getattr(cfg, k):.2e}" for k in used_params(name, cfg)))
     results = []
     for fold, (train_idx, val_idx) in enumerate(folds, start=1):
-        model = build_model(name, len(classes), cfg.img_size, cfg.pretrained)
+        model = build_model(name, len(classes), cfg.img_size, cfg.pretrained, cfg.dropout)
         n_params = sum(p.numel() for p in model.parameters())
         print(f"\n=== {name} ({n_params:,} parameter) | fold {fold}/{len(folds)} | {device} ===")
         train_loader = make_loader(Subset(sets[0], train_idx), cfg, train=True)
         val_loader = make_loader(Subset(sets[1], val_idx), cfg)
-        model, history = train_fold(model, train_loader, val_loader, cfg.epochs, cfg.lr, cfg.accum_steps, device)
+        model, history = train_fold(model, train_loader, val_loader, cfg, device, use_muon)
+        torch.save(model.state_dict(), model_dir / f"fold{fold}.pt")
 
         y_true, y_prob = predict(model, test_loader, device)
         metrics = compute_metrics(y_true, y_prob)
-        results.append(metrics)
+        b = int(np.argmin(history["val_loss"]))
+        accs = {"train_acc": history["train_acc"][b], "val_acc": history["val_acc"][b]}
+        results.append({"best_epoch": b + 1, **accs, **metrics})
         print("  test  | " + " | ".join(f"{k} {v:.4f}" for k, v in metrics.items()))
 
         plot_history(history, f"{name} fold {fold} - kurva training", fig_dir / f"fold{fold}_history.png")
@@ -71,18 +84,25 @@ def cross_validate(
     return results
 
 
-def save_results(all_results: dict[str, list[dict[str, float]]], out_path: Path) -> None:
-    """Simpan tabel Markdown: metrik per fold tiap model + perbandingan rata-rata (siap ditempel ke README)."""
+def save_results(all_results: dict[str, list[dict[str, float]]], cfgs: dict[str, Config], out_path: Path) -> None:
+    """Simpan tabel Markdown: hyperparameter, metrik per fold tiap model, dan perbandingan rata-rata."""
+
     def row(*cells: str) -> str:
         return "| " + " | ".join(cells) + " |"
 
-    sep = "|---" * (len(METRIC_NAMES) + 1) + "|"
-    lines = []
+    def sep(n: int) -> str:
+        return "|---" * n + "|"
+
+    lines = ["### Hyperparameter", "", row("Model", "optimizer", *TUNED), sep(len(TUNED) + 2)]
+    for name, c in cfgs.items():
+        values = [f"{getattr(c, k):.2e}" if k in used_params(name, c) else "-" for k in TUNED]
+        lines.append(row(name, "Muon + AdamW" if name in c.muon_models else "AdamW", *values))
     for name, results in all_results.items():
-        lines += [f"### {name}", "", row("Fold", *METRIC_NAMES), sep]
-        lines += [row(str(i), *(f"{r[m]:.4f}" for m in METRIC_NAMES)) for i, r in enumerate(results, 1)]
-        lines.append("")
-    lines += ["### Perbandingan model (rata-rata ± std)", "", row("Model", *METRIC_NAMES), sep]
+        lines += ["", f"### {name}", "", row("Fold", *FOLD_COLUMNS), sep(len(FOLD_COLUMNS) + 1)]
+        for i, r in enumerate(results, 1):
+            lines.append(row(str(i), str(r["best_epoch"]), *(f"{r[k]:.4f}" for k in FOLD_COLUMNS[1:])))
+    lines += ["", "### Perbandingan model (rata-rata ± std data test)", "", row("Model", *METRIC_NAMES)]
+    lines.append(sep(len(METRIC_NAMES) + 1))
     for name, results in all_results.items():
         lines.append(row(name, *(f"{mu:.4f} ± {sd:.4f}" for mu, sd in summarize(results).values())))
     out_path.write_text("\n".join(lines), encoding="utf-8")
@@ -98,19 +118,9 @@ def run(cfg: Config) -> dict[str, dict[str, tuple[float, float]]]:
     np.random.seed(cfg.seed)
     torch.manual_seed(cfg.seed)
 
-    data_dir = cfg.data_dir
-    if not (data_dir / "Training").is_dir() or not (data_dir / "Testing").is_dir():
-        raise FileNotFoundError(f"Ekstrak archive.zip ke {data_dir.resolve()} sehingga ada folder Training dan Testing")
-    if cfg.device == "cuda":
-        if not torch.cuda.is_available():
-            raise RuntimeError("CUDA tidak terdeteksi: install torch CUDA dari requirements.txt atau set device='cpu'")
-        torch.backends.cudnn.benchmark = True
-        print(f"GPU: {torch.cuda.get_device_name(0)}")
+    classes, (train_paths, train_labels), (test_paths, test_labels) = load_dataset(cfg.data_dir)
+    get_device(cfg.device)
     cfg.output_dir.mkdir(parents=True, exist_ok=True)
-    classes = find_classes(data_dir / "Training")
-    train_paths, train_labels = list_images(data_dir / "Training", classes)
-    test_paths, test_labels = list_images(data_dir / "Testing", classes)
-    print(f"Kelas: {classes} | gambar Training: {len(train_paths)} | gambar Testing: {len(test_paths)}")
     examples = [train_paths[int(np.argmax(train_labels == i))] for i in range(len(classes))]
     plot_preprocessing(examples, cfg.img_size, cfg.output_dir / "preprocessing.png")
 
@@ -122,9 +132,14 @@ def run(cfg: Config) -> dict[str, dict[str, tuple[float, float]]]:
     test_loader = make_loader(ImageDataset(test_images, test_labels, eval_transform()), cfg)
     folds = make_folds(train_labels, cfg.n_folds, cfg.seed)
 
-    all_results = {name: cross_validate(name, cfg, classes, sets, folds, test_loader) for name in cfg.models}
+    best_file = cfg.output_dir / "tuning" / "best_params.json"
+    tuned = json.loads(best_file.read_text(encoding="utf-8")) if best_file.exists() else {}
+    print(f"Hyperparameter: {'hasil tuning ' + str(best_file) if tuned else 'default dari src/config.py'}")
+    cfgs = {name: replace(cfg, **tuned.get(name, {})) for name in cfg.models}
+
+    all_results = {name: cross_validate(name, cfgs[name], classes, sets, folds, test_loader) for name in cfg.models}
     summaries = {name: summarize(results) for name, results in all_results.items()}
-    save_results(all_results, cfg.output_dir / "results.md")
+    save_results(all_results, cfgs, cfg.output_dir / "results.md")
     plot_comparison(summaries, cfg.output_dir / "comparison.png")
 
     print(f"\nRata-rata {cfg.n_folds}-fold (lengkap di {cfg.output_dir / 'results.md'}):")
@@ -135,7 +150,7 @@ def run(cfg: Config) -> dict[str, dict[str, tuple[float, float]]]:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Klasifikasi Brain Tumor MRI: 3 model dengan 5-fold cross validation")
-    parser.add_argument("--epochs", type=int, default=Config.epochs, help="jumlah epoch per fold")
+    parser.add_argument("--epochs", type=int, default=Config.epochs, help="batas maksimum epoch per fold")
     parser.add_argument("--folds", type=int, default=Config.n_folds, help="jumlah fold cross validation")
     parser.add_argument("--models", nargs="+", choices=MODEL_NAMES, default=MODEL_NAMES, help="model yang dilatih")
     args = parser.parse_args()

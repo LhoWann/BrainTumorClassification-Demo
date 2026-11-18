@@ -14,13 +14,14 @@ cross validation.**
 
 Tugas aslinya (MonkeyPox) dikerjakan ulang dengan dataset lain, yaitu
 [Brain Tumor MRI Dataset](https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset). Dataset ini
-punya 4 kelas (`glioma`, `meningioma`, `notumor`, `pituitary`), 5.600 gambar `Training` dan 1.600 gambar `Testing`.
+punya 4 kelas (`glioma`, `meningioma`, `notumor`, `pituitary`), 5.600 gambar `Training` dan 1.600 gambar `Testing`
+(setelah duplikat dibuang: 5.429 dan 1.584).
 
-| Model | Arsitektur | Parameter |
-| --- | --- | --- |
-| `cnn_scratch` | 3 blok Conv-ReLU-MaxPool (16-32-64) → Flatten → Linear | 224 rb |
-| `cnn_modified` | 4 blok Conv-**BatchNorm**-ReLU-MaxPool (32-64-128-256) → **Global Avg Pool** → **Dropout 0.3** → Linear | 390 rb |
-| `efficientnet_b0` | EfficientNet-B0 [1] pretrained ImageNet, layer terakhir diganti 4 kelas | 4,0 jt |
+| Model | Arsitektur | Optimizer | Parameter |
+| --- | --- | --- | --- |
+| `cnn_scratch` | 3 blok Conv-ReLU-MaxPool (16-32-64) → Flatten → Linear | AdamW | 224 rb |
+| `cnn_modified` | 4 blok Conv-**BatchNorm**-ReLU-MaxPool (32-64-128-256) → **Global Avg Pool** → **Dropout** → Linear | **Muon** (filter konvolusi) + AdamW (sisanya) | 390 rb |
+| `efficientnet_b0` | EfficientNet-B0 [1] pretrained ImageNet, layer terakhir diganti 4 kelas | AdamW | 4,0 jt |
 
 ## Cara Menjalankan
 
@@ -33,7 +34,15 @@ pip install -r requirements.txt
 python -c "import torch; print(torch.__version__, torch.cuda.is_available())"   # harus: 2.11.0+cu128 True
 ```
 
-3. Jalankan:
+3. (Disarankan) cari hyperparameter terbaik dengan Optuna. Hasilnya disimpan di `outputs/tuning/` dan otomatis
+   dipakai `main.py`. Jika terhenti, jalankan lagi perintah yang sama untuk melanjutkan.
+
+```bash
+python -m src.tuning                               # 20 trial per model, semua model
+python -m src.tuning --trials 10 --models cnn_scratch
+```
+
+4. Jalankan:
 
 ```bash
 python main.py                                     # 3 model x 5 fold + evaluasi + grafik
@@ -42,14 +51,24 @@ python main.py --models cnn_scratch cnn_modified   # hanya model tertentu
 pytest                                             # tes dengan dataset sintetis
 ```
 
-Semua hyperparameter ada di `src/config.py`. Default `device = "cuda"` dengan mixed precision bfloat16; program
-berhenti jika CUDA tidak terdeteksi (ubah ke `"cpu"` bila tidak punya GPU NVIDIA).
+Semua hyperparameter ada di `src/config.py`. Default `device = "cuda"`; program berhenti jika CUDA tidak
+terdeteksi (ubah ke `"cpu"` bila tidak punya GPU NVIDIA). Perkiraan waktu di RTX 3050 Laptop: tuning sekitar
+3-4 jam, `main.py` sekitar 3-5 jam (EfficientNet sekitar 1 menit per epoch, CNN scratch sekitar 15-25 detik).
 
 ## Struktur
 
 ```text
 main.py                  pipeline lengkap
+laporan.pdf              laporan jadi
 data/                    Training/ dan Testing/ (tidak di-upload)
+materi/                  soal tugas (.docx), hanya lokal, diabaikan git
+report/                  sumber LaTeX laporan, hanya lokal, diabaikan git
+assets/                  banner dan ilustrasi README (SVG)
+outputs/
+├── models/              bobot terbaik <model>/fold<k>.pt (tidak di-upload)
+├── figures/             kurva training, confusion matrix, ROC per fold
+├── tuning/              hasil Optuna, best_params.json
+└── results.md           tabel hasil
 src/
 ├── config.py            hyperparameter dan path
 ├── data/
@@ -61,7 +80,12 @@ src/
 │   ├── cnn_modified.py  model 2
 │   └── efficientnet.py  model 3
 ├── training/
-│   └── trainer.py       loop train/valid, simpan bobot terbaik, prediksi
+│   ├── trainer.py       loop train/valid, early stopping, optimizer, prediksi
+│   └── muon.py          optimizer Muon untuk filter konvolusi hidden layer
+├── tuning/
+│   ├── search.py        Optuna: ruang pencarian, objective, pruning
+│   ├── report.py        tabel trial dan grafik tuning
+│   └── __main__.py      perintah python -m src.tuning
 └── evaluation/
     ├── metrics.py       accuracy, precision, recall, F1, ROC-AUC
     └── plots.py         kurva training, confusion matrix, ROC, perbandingan
@@ -70,287 +94,126 @@ tests/test_pipeline.py   tes semua komponen
 
 ## Alur Kerja
 
-### Alur kerja keseluruhan
+<p align="center"><img src="assets/workflow.svg" alt="Alur kerja main.py" width="100%"></p>
 
-```mermaid
-flowchart TD
-    START["python main.py<br/>opsi: --epochs, --folds, --models"]
+Gambaran besar `main.py`: data dibersihkan, diproses sekali, lalu setiap model dilatih 5 kali (satu per fold) dan
+dinilai di data `Testing`. Semua hasil masuk ke folder `outputs/`.
 
-    subgraph PREP["1. Persiapan data"]
-        direction TB
-        SEED["Set seed 42<br/>random, numpy, torch<br/>main.py"]
-        CEK{"Ada data/Training<br/>dan data/Testing?"}
-        ERR["Berhenti: FileNotFoundError<br/>ekstrak archive.zip ke data/"]
-        LIST["Baca kelas dan path gambar<br/>Training/ dan Testing/<br/>glioma, meningioma, notumor, pituitary<br/>src/data/dataset.py"]
-        PPNG["Contoh preprocessing 1 gambar per kelas<br/>asli vs crop + resize<br/>src/evaluation/plots.py"]
-        TF["Muat semua gambar sekali ke RAM: crop + resize 224<br/>transform train: augmentasi, valid dan test: tanpa<br/>src/data/preprocess.py"]
-        FOLD["Bagi Training jadi 5 fold<br/>StratifiedKFold, shuffle, seed 42<br/>src/data/dataset.py"]
-    end
+<p align="center"><img src="assets/cross_validation.svg" alt="Pembagian data 5-fold" width="100%"></p>
 
-    subgraph CV["2. Cross validation: loop model x fold"]
-        direction TB
-        MODEL["Untuk setiap model<br/>cnn_scratch, cnn_modified, efficientnet_b0"]
-        subgraph PERFOLD["Untuk setiap fold k = 1 sampai 5"]
-            direction TB
-            BUILD["Buat model baru dengan bobot awal<br/>build_model<br/>src/models/"]
-            LOADER["DataLoader batch 16<br/>train: 4/5 Training, diacak, drop_last<br/>valid: 1/5 Training<br/>main.py"]
-            TRAIN["Latih 10 epoch<br/>CrossEntropyLoss, AdamW lr 3e-4<br/>grad accumulation 2, bf16<br/>simpan bobot val loss terendah<br/>src/training/trainer.py"]
-            PRED["Prediksi data Testing<br/>probabilitas softmax<br/>src/training/trainer.py"]
-            MET["Hitung metrik test<br/>accuracy, precision, recall, F1 macro<br/>ROC-AUC one-vs-rest macro<br/>src/evaluation/metrics.py"]
-            PLOT["Grafik fold k<br/>kurva training, confusion matrix, ROC<br/>src/evaluation/plots.py"]
-        end
-        NEXTF{"Masih ada fold?"}
-        NEXTM{"Masih ada model?"}
-    end
+`Training` dibagi 5 bagian dengan proporsi kelas yang sama. Bagian valid bergiliran tiap fold, sedangkan `Testing`
+tidak pernah dipakai untuk belajar atau memilih model.
 
-    subgraph SUM["3. Rangkuman hasil"]
-        direction TB
-        AGG["Rata-rata ± std metrik dari 5 fold<br/>per model<br/>src/evaluation/metrics.py"]
-        TAB["Tabel Markdown per fold + perbandingan<br/>main.py"]
-        BAR["Diagram batang perbandingan model<br/>src/evaluation/plots.py"]
-    end
+<p align="center"><img src="assets/architectures.svg" alt="Arsitektur 3 model" width="100%"></p>
 
-    subgraph OUT["Folder outputs/"]
-        direction TB
-        O1["preprocessing.png"]
-        O2["figures/nama_model/<br/>foldk_history.png<br/>foldk_cm.png<br/>foldk_roc.png"]
-        O3["results.md"]
-        O4["comparison.png"]
-    end
+Tiga model dari yang paling sederhana sampai transfer learning. Kotak oranye menandai bagian yang baru atau diganti
+dibanding `cnn_scratch`.
 
-    START --> SEED --> CEK
-    CEK -->|"tidak"| ERR
-    CEK -->|"ya"| LIST
-    LIST --> PPNG --> TF --> FOLD --> MODEL
-    MODEL --> BUILD --> LOADER --> TRAIN --> PRED --> MET --> PLOT --> NEXTF
-    NEXTF -->|"ya"| BUILD
-    NEXTF -->|"tidak"| NEXTM
-    NEXTM -->|"ya"| MODEL
-    NEXTM -->|"tidak"| AGG
-    AGG --> TAB
-    AGG --> BAR
-    PPNG -.-> O1
-    PLOT -.-> O2
-    TAB -.-> O3
-    BAR -.-> O4
+<p align="center"><img src="assets/training.svg" alt="Loop training per fold" width="100%"></p>
 
-    classDef data fill:#dbeafe,stroke:#3b82f6,color:#1e3a8a
-    classDef train fill:#fef3c7,stroke:#d97706,color:#78350f
-    classDef eval fill:#dcfce7,stroke:#16a34a,color:#14532d
-    classDef out fill:#fce7f3,stroke:#db2777,color:#831843
-    classDef dec fill:#f1f5f9,stroke:#64748b,color:#0f172a
-    class START,SEED,LIST,TF,FOLD,LOADER data
-    class MODEL,BUILD,TRAIN train
-    class PRED,MET,AGG eval
-    class PPNG,PLOT,TAB,BAR,O1,O2,O3,O4 out
-    class CEK,NEXTF,NEXTM,ERR dec
-```
+Satu fold: train dan valid bergantian tiap epoch sampai early stopping. Bobot dengan val loss terendah dipakai untuk
+testing dan disimpan ke `outputs/models/`.
 
-### Pembagian data 5-fold
+<p align="center"><img src="assets/tuning.svg" alt="Tuning Optuna dengan pruning" width="100%"></p>
 
-```mermaid
-flowchart TD
-    KAG["Folder data/<br/>hasil ekstrak archive.zip"]
-    TRN["Folder Training/<br/>4 kelas"]
-    TST["Folder Testing/<br/>4 kelas"]
-    SKF["StratifiedKFold<br/>5 bagian, shuffle, seed 42<br/>proporsi kelas tiap bagian sama"]
-
-    subgraph ROT["Rotasi fold: bagian valid selalu berganti"]
-        direction TB
-        F1["Fold 1: valid = bagian 1 | train = bagian 2, 3, 4, 5"]
-        F2["Fold 2: valid = bagian 2 | train = bagian 1, 3, 4, 5"]
-        F3["Fold 3: valid = bagian 3 | train = bagian 1, 2, 4, 5"]
-        F4["Fold 4: valid = bagian 4 | train = bagian 1, 2, 3, 5"]
-        F5["Fold 5: valid = bagian 5 | train = bagian 1, 2, 3, 4"]
-        F1 ~~~ F2 ~~~ F3 ~~~ F4 ~~~ F5
-    end
-
-    subgraph ONE["Isi satu fold k"]
-        direction TB
-        TR["TRAIN: 4/5 Training<br/>preprocessing + augmentasi<br/>flip horizontal, rotasi 10 derajat, brightness dan contrast<br/>diacak, drop_last"]
-        VA["VALID: 1/5 Training<br/>preprocessing saja, tanpa augmentasi"]
-        TE["TEST: seluruh Testing<br/>preprocessing saja, tanpa augmentasi<br/>sama untuk semua fold dan model"]
-    end
-
-    W["Update bobot model<br/>backpropagation + AdamW"]
-    B["Pilih epoch terbaik<br/>val loss terendah<br/>bobot tidak diubah"]
-    M["Metrik akhir fold k<br/>bobot tidak diubah"]
-
-    KAG --> TRN
-    KAG --> TST
-    TRN --> SKF --> ROT
-    ROT --> TR
-    ROT --> VA
-    TST --> TE
-    TR -->|"dipakai untuk belajar"| W
-    VA -->|"hanya dinilai"| B
-    TE -->|"hanya dinilai, sekali di akhir"| M
-
-    classDef data fill:#dbeafe,stroke:#3b82f6,color:#1e3a8a
-    classDef train fill:#fef3c7,stroke:#d97706,color:#78350f
-    classDef valid fill:#ede9fe,stroke:#8b5cf6,color:#3b0764
-    classDef test fill:#dcfce7,stroke:#16a34a,color:#14532d
-    classDef dec fill:#f1f5f9,stroke:#64748b,color:#0f172a
-    class KAG,TRN,TST,SKF data
-    class F1,F2,F3,F4,F5 dec
-    class TR,W train
-    class VA,B valid
-    class TE,M test
-```
-
-### Arsitektur model
-
-```mermaid
-flowchart LR
-    subgraph S["cnn_scratch, sekitar 224 ribu parameter"]
-        direction TB
-        S0["Input<br/>3x224x224"]
-        S1["Blok 1: Conv3x3 + ReLU + MaxPool2<br/>16x112x112"]
-        S2["Blok 2: Conv3x3 + ReLU + MaxPool2<br/>32x56x56"]
-        S3["Blok 3: Conv3x3 + ReLU + MaxPool2<br/>64x28x28"]
-        S4["Flatten<br/>64 x 28 x 28 = 50176"]
-        S5["Linear 50176 ke 4<br/>sekitar 200 ribu parameter di sini"]
-        S6["Output 4 kelas"]
-        S0 --> S1 --> S2 --> S3 --> S4 --> S5 --> S6
-    end
-
-    subgraph M["cnn_modified, sekitar 390 ribu parameter"]
-        direction TB
-        M0["Input<br/>3x224x224"]
-        M1["Blok 1: Conv3x3 + BatchNorm + ReLU + MaxPool2<br/>32x112x112"]
-        M2["Blok 2: Conv3x3 + BatchNorm + ReLU + MaxPool2<br/>64x56x56"]
-        M3["Blok 3: Conv3x3 + BatchNorm + ReLU + MaxPool2<br/>128x28x28"]
-        M4["Blok 4 BARU: Conv3x3 + BatchNorm + ReLU + MaxPool2<br/>256x14x14"]
-        M5["Global Average Pooling BARU<br/>256x1x1"]
-        M6["Flatten<br/>256"]
-        M7["Dropout 0.3 BARU<br/>256"]
-        M8["Linear 256 ke 4"]
-        M9["Output 4 kelas"]
-        M0 --> M1 --> M2 --> M3 --> M4 --> M5 --> M6 --> M7 --> M8 --> M9
-    end
-
-    subgraph E["efficientnet_b0, sekitar 4,0 juta parameter"]
-        direction TB
-        E0["Input<br/>3x224x224"]
-        E1["Stem: Conv3x3 stride 2 + BatchNorm + SiLU<br/>32x112x112"]
-        E2["16 blok MBConv dalam 7 tahap<br/>16x112x112, 24x56x56, 40x28x28<br/>80x14x14, 112x14x14, 192x7x7, 320x7x7"]
-        E3["Conv1x1 + BatchNorm + SiLU<br/>1280x7x7"]
-        E4["Global Average Pooling + Flatten<br/>1280"]
-        E5["Dropout 0.2<br/>1280"]
-        E6["classifier[1] diganti<br/>Linear 1280 ke 4"]
-        E7["Output 4 kelas"]
-        E0 --> E1 --> E2 --> E3 --> E4 --> E5 --> E6 --> E7
-    end
-
-    S ~~~ M ~~~ E
-
-    classDef io fill:#f1f5f9,stroke:#64748b,color:#0f172a
-    classDef layer fill:#dbeafe,stroke:#3b82f6,color:#1e3a8a
-    classDef head fill:#fef3c7,stroke:#d97706,color:#78350f
-    classDef changed fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,stroke-width:2px
-    classDef pre fill:#dcfce7,stroke:#16a34a,color:#14532d
-    class S0,S6,M0,M9,E0,E7 io
-    class S1,S2,S3 layer
-    class S4,S5,M6,M8 head
-    class M1,M2,M3,M4,M5,M7 changed
-    class E1,E2,E3,E4,E5 pre
-    class E6 changed
-```
-
-### Loop training per epoch
-
-```mermaid
-flowchart TD
-    CALL["train_fold dipanggil<br/>model, train_loader, val_loader, 10 epoch, lr 3e-4, accum 2"]
-    INIT["Pindahkan model ke GPU atau CPU<br/>loss = CrossEntropyLoss<br/>optimizer = AdamW lr 3e-4<br/>best_loss = tak hingga<br/>best_state = salinan bobot awal"]
-    EP{"Masih ada epoch?<br/>epoch ke-1 sampai ke-10"}
-
-    subgraph RT["run_epoch mode train, data train"]
-        direction TB
-        T0["model.train<br/>gradien aktif, Dropout aktif<br/>BatchNorm pakai statistik batch"]
-        T1["Ambil 1 batch: 16 gambar teraugmentasi"]
-        T2["Forward: logits = model gambar"]
-        T3["loss = CrossEntropy logits vs label"]
-        T4["backward loss dibagi 2<br/>gradien dijumlahkan"]
-        ACC{"Sudah 2 batch atau<br/>batch terakhir?"}
-        UPD["optimizer.step + zero_grad<br/>BOBOT DIPERBARUI"]
-        T5["Tambah loss dan jumlah tebakan benar"]
-        T6{"Masih ada batch?"}
-    end
-
-    subgraph RV["run_epoch mode evaluasi, data valid"]
-        direction TB
-        V0["model.eval + tanpa gradien<br/>Dropout mati, BatchNorm pakai running stats"]
-        V1["Ambil 1 batch valid tanpa augmentasi"]
-        V2["Forward + hitung loss<br/>TANPA update bobot"]
-        V3["Tambah loss dan jumlah tebakan benar"]
-        V4{"Masih ada batch?"}
-    end
-
-    HIST["Catat ke history<br/>train loss, val loss, train acc, val acc"]
-    CMP{"val loss lebih kecil<br/>dari best_loss?"}
-    SAVE["best_loss = val loss<br/>best_state = salinan bobot epoch ini"]
-    LOAD["Muat best_state ke model"]
-    RET["Kembalikan model terbaik + history<br/>lanjut prediksi data Testing"]
-
-    CALL --> INIT --> EP
-    EP -->|"ya"| T0 --> T1 --> T2 --> T3 --> T4 --> ACC
-    ACC -->|"ya"| UPD --> T5
-    ACC -->|"tidak"| T5 --> T6
-    T6 -->|"ya"| T1
-    T6 -->|"tidak: rata-rata loss dan akurasi train"| V0
-    V0 --> V1 --> V2 --> V3 --> V4
-    V4 -->|"ya"| V1
-    V4 -->|"tidak: rata-rata loss dan akurasi valid"| HIST
-    HIST --> CMP
-    CMP -->|"ya"| SAVE --> EP
-    CMP -->|"tidak"| EP
-    EP -->|"tidak, 10 epoch selesai"| LOAD --> RET
-
-    classDef data fill:#dbeafe,stroke:#3b82f6,color:#1e3a8a
-    classDef train fill:#fef3c7,stroke:#d97706,color:#78350f
-    classDef valid fill:#ede9fe,stroke:#8b5cf6,color:#3b0764
-    classDef best fill:#dcfce7,stroke:#16a34a,color:#14532d
-    classDef dec fill:#f1f5f9,stroke:#64748b,color:#0f172a
-    class CALL,INIT,HIST data
-    class T0,T1,T2,T3,T4,T5,UPD train
-    class V0,V1,V2,V3 valid
-    class SAVE,LOAD,RET best
-    class EP,T6,V4,CMP,ACC dec
-```
+Optuna mencoba 20 kombinasi hyperparameter per model di fold 1. Trial yang tertinggal dari median dihentikan lebih
+awal supaya waktu tidak terbuang.
 
 ## Metode
 
+- **Pembersihan data:** gambar dengan isi file identik (hash SHA-256) dibuang: 171 di `Training`, 16 di `Testing`.
+  Tanpa langkah ini gambar yang sama bisa masuk train dan valid sekaligus, sehingga model terlihat bagus karena
+  menghafal.
 - **Pembagian data:** `Training` dibagi 5 fold stratified (4 bagian train, 1 bagian valid). `Testing` hanya untuk
   testing. Data valid/test tidak pernah dipakai untuk update bobot.
 - **Preprocessing:** crop tepi hitam MRI dan resize 224x224 dilakukan sekali di awal (hasil disimpan di RAM, ~1,1 GB),
   lalu normalisasi ImageNet. Augmentasi khusus train: flip horizontal, rotasi ±10°, brightness/contrast jitter.
-- **Loss / optimizer:** CrossEntropyLoss, AdamW (lr 3e-4), 10 epoch, GPU CUDA + autocast bfloat16. Batch 16 dengan
-  gradient accumulation 2 langkah (batch efektif 32). Bobot dengan val loss terendah dipakai saat testing.
+- **Training:** CrossEntropyLoss dengan label smoothing [4], AdamW dengan weight decay [3], batch 16 dengan gradient
+  accumulation 2 (batch efektif 32), fp32 di GPU. Learning rate dibagi 2 jika val loss stagnan 2 epoch. Maksimal 40
+  epoch dengan early stopping (berhenti jika val loss tidak membaik 6 epoch), lalu bobot dengan val loss terendah
+  dipakai saat testing. Khusus `cnn_modified`, filter konvolusi hidden layer dilatih dengan Muon [5] (momentum
+  yang arah update-nya diortogonalkan dengan iterasi Newton-Schulz), sedangkan bias, BatchNorm, dan layer output
+  tetap AdamW. `torch.optim.Muon` hanya menerima bobot 2D, jadi `src/training/muon.py` meratakan filter
+  [out, in, 3, 3] menjadi matriks [out, in x 9]. Mixed precision bfloat16 sempat dicoba tetapi membuat training
+  tidak stabil (val loss melonjak dan akurasi turun ke tebakan acak) tanpa mempercepat, jadi dihapus.
+- **Tuning:** Optuna [2] (sampler TPE, MedianPruner) mencari `lr`, `muon_lr` (cnn_modified), `weight_decay`,
+  `label_smoothing`, dan `dropout` (20 trial per model, maksimal 12 epoch per trial) hanya di fold 1. Trial yang
+  akurasi validnya di bawah median dipangkas lebih awal. `Testing` tidak pernah dipakai saat tuning.
+- **Menghafal atau memahami?** `results.md` mencatat akurasi train, valid, dan test di epoch terbaik setiap fold.
+  Akurasi train jauh di atas valid/test berarti model menghafal (overfitting). Jika selisihnya kecil dan akurasi
+  test mendekati valid, model menangkap pola yang berlaku untuk gambar baru.
 - **Evaluasi:** confusion matrix, accuracy, precision, recall, F1 (macro), ROC-AUC (one-vs-rest) pada `Testing`,
   dirata-rata dari 5 fold.
 
 ## Hasil
 
-Tempel isi `outputs/results.md` setelah `python main.py` selesai:
+Rata-rata ± std dari 5 fold pada data `Testing` (1.584 gambar), disalin dari `outputs/results.md`. Tabel per fold
+(termasuk akurasi train dan valid) ada di file yang sama, hasil tuning di `outputs/tuning/`.
 
 | Model | accuracy | precision | recall | f1 | roc_auc |
-| --- | --- | --- | --- | --- | --- |
-| cnn_scratch | ... | ... | ... | ... | ... |
-| cnn_modified | ... | ... | ... | ... | ... |
-| efficientnet_b0 | ... | ... | ... | ... | ... |
+|---|---|---|---|---|---|
+| cnn_scratch | 0.9227 ± 0.0040 | 0.9253 ± 0.0047 | 0.9215 ± 0.0040 | 0.9205 ± 0.0041 | 0.9766 ± 0.0013 |
+| cnn_modified | 0.9237 ± 0.0050 | 0.9296 ± 0.0050 | 0.9224 ± 0.0050 | 0.9214 ± 0.0051 | 0.9822 ± 0.0012 |
+| efficientnet_b0 | 0.9615 ± 0.0042 | 0.9641 ± 0.0035 | 0.9606 ± 0.0042 | 0.9606 ± 0.0041 | 0.9920 ± 0.0022 |
+
+Hyperparameter yang dipakai (hasil tuning, `outputs/tuning/best_params.json`):
+
+| Model | optimizer | lr | muon_lr | weight_decay | label_smoothing | dropout |
+|---|---|---|---|---|---|---|
+| cnn_scratch | AdamW | 1.15e-03 | - | 7.07e-05 | 3.64e-02 | - |
+| cnn_modified | Muon + AdamW | 8.47e-05 | 1.58e-02 | 6.35e-02 | 1.46e-01 | 7.80e-02 |
+| efficientnet_b0 | AdamW | 3.08e-04 | - | 6.80e-03 | 4.12e-03 | 4.85e-01 |
+
+- **EfficientNet-B0 paling baik** di semua metrik (accuracy sekitar 0.96, ROC-AUC 0.99). Bobot pretrained ImageNet
+  membuat model ini sudah "kenal" tepi dan tekstur sebelum melihat MRI.
+- **cnn_modified vs cnn_scratch:** accuracy dan F1 hampir sama (selisih sekitar 0.001, masih di dalam std), tetapi
+  ROC-AUC cnn_modified lebih tinggi (0.982 vs 0.977). Artinya skor probabilitasnya lebih baik dalam memisahkan
+  kelas, walaupun jumlah tebakan benarnya hampir sama.
+- **Menghafal atau memahami?** Rata-rata selisih akurasi train dan valid di epoch terbaik: cnn_scratch sekitar 0.046
+  (train 0.995, valid 0.948), cnn_modified sekitar 0.012, efficientnet_b0 sekitar 0.001. BatchNorm, global average
+  pooling, dan dropout di cnn_modified mengurangi gejala menghafal pada cnn_scratch.
+- Akurasi test semua model sedikit di bawah akurasi valid, jadi skor valid (yang dipakai memilih epoch) agak
+  optimistis. Karena itu angka akhir selalu diambil dari `Testing`.
 
 Gambar: `outputs/preprocessing.png`, `outputs/comparison.png`, dan `outputs/figures/<model>/fold{k}_{history,cm,roc}.png`.
 
-## Kerangka Laporan (Template Engineering)
+### Bobot model
 
-Abstrak (150-200 kata) → Pendahuluan → Kajian Teori (CNN, BatchNorm, dropout, transfer learning, metrik) → Metode
-(bagian di atas) → Hasil dan Pembahasan (tabel + grafik, efek tiap modifikasi, scratch vs pretrained, kelas yang
-sering tertukar) → Kesimpulan → Referensi (IEEE).
+Bobot terbaik setiap fold disimpan di `outputs/models/<model>/fold<k>.pt` (tidak ikut di-push karena `*.pt` ada di
+`.gitignore`). Hasil di atas berasal dari run sebelum fitur ini ditambahkan, jadi jalankan `python main.py` sekali
+lagi untuk mendapatkan file bobotnya (angkanya bisa bergeser sedikit). Cara memuat salah satunya:
+
+```python
+import torch
+from src.models import build_model
+
+model = build_model("efficientnet_b0", 4, 224, pretrained=False)
+model.load_state_dict(torch.load("outputs/models/efficientnet_b0/fold1.pt", map_location="cpu"))
+model.eval()
+```
+
+## Laporan
+
+Laporan lengkap mengikuti Template Engineering: [`laporan.pdf`](laporan.pdf). Isinya: abstrak, pendahuluan, kajian teori, metode, hasil dan pembahasan, kesimpulan, dan
+referensi (IEEE).
 
 > Jangan upload dataset (`data/`) atau bobot model (`*.pt`, `*.pth`) ke GitHub; sudah diatur di `.gitignore`.
+> Folder `materi/` (file soal tugas .docx) dan `report/` (sumber LaTeX laporan) juga hanya disimpan lokal dan
+> diabaikan git.
 
 ## Referensi
 
-[1] M. Tan and Q. V. Le, "EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks," in *Proc. ICML*,
-1.    [arXiv:1905.11946](https://arxiv.org/abs/1905.11946)
+[1] M. Tan and Q. V. Le, "EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks," in *Proc. ICML*, 2019.
+[arXiv:1905.11946](https://arxiv.org/abs/1905.11946)
+
+[2] T. Akiba, S. Sano, T. Yanase, T. Ohta, and M. Koyama, "Optuna: A Next-generation Hyperparameter Optimization
+Framework," in *Proc. KDD*, 2019. [arXiv:1907.10902](https://arxiv.org/abs/1907.10902)
+
+[3] I. Loshchilov and F. Hutter, "Decoupled Weight Decay Regularization," in *Proc. ICLR*, 2019.
+[arXiv:1711.05101](https://arxiv.org/abs/1711.05101)
+
+[4] C. Szegedy, V. Vanhoucke, S. Ioffe, J. Shlens, and Z. Wojna, "Rethinking the Inception Architecture for Computer
+Vision," in *Proc. CVPR*, 2016. [arXiv:1512.00567](https://arxiv.org/abs/1512.00567)
+
+[5] K. Jordan et al., "Muon: An optimizer for hidden layers in neural networks," 2024. [Online].
+Available: [kellerjordan.github.io/posts/muon](https://kellerjordan.github.io/posts/muon/)

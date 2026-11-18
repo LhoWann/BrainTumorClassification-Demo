@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1152" height="496" viewBox="0 0 1152 496" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, 'DejaVu Sans', sans-serif">
+  <title>Pembagian data 5-fold</title>
+  <defs>
+    <clipPath id="card"><rect x="1.44" y="1.44" width="1149.12" height="493.12" rx="18.72"/></clipPath>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="0.35">
+      <stop offset="0" stop-color="#091122"/><stop offset="0.45" stop-color="#101b33"/>
+      <stop offset="1" stop-color="#1b2c51"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.2" r="0.55">
+      <stop offset="0" stop-color="#26385a" stop-opacity="0.55"/><stop offset="1" stop-color="#26385a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <g clip-path="url(#card)">
+    <rect width="1152" height="496" fill="url(#bg)"/>
+    <rect width="1152" height="496" fill="url(#glow)"/>
+  </g>
+  <rect x="1.44" y="1.44" width="1149.12" height="493.12" rx="18.72" fill="none" stroke="#26385a" stroke-width="2.88"/>
+
+  <text x="30" y="52" font-size="26" font-weight="600" fill="#f4f7fb">Pembagian Data <tspan fill="#a2c8ec">5-Fold</tspan></text>
+  <text x="30" y="80" font-size="14" fill="#aebbd0">Training dibagi 5 bagian. Setiap fold memakai 4 bagian untuk train dan 1 bagian untuk valid; Testing tidak pernah ikut</text>
+
+  <!-- source cards -->
+  <rect x="30" y="110" width="260" height="126" rx="14" fill="#0c1628" stroke="#a2c8ec" stroke-opacity="0.55" stroke-width="1.4"/>
+  <text x="50" y="140" font-size="15" font-weight="600" fill="#f4f7fb">data/Training</text>
+  <text x="50" y="180" font-size="32" font-weight="700" fill="#a2c8ec">5.429</text>
+  <text x="146" y="180" font-size="12.5" fill="#aebbd0">gambar, 4 kelas</text>
+  <text x="50" y="206" font-size="12.5" fill="#aebbd0">StratifiedKFold, shuffle, seed 42</text>
+  <text x="50" y="224" font-size="12.5" fill="#aebbd0">proporsi kelas tiap bagian sama</text>
+
+  <rect x="30" y="252" width="260" height="88" rx="14" fill="#0c1628" stroke="#e9a3ab" stroke-opacity="0.6" stroke-width="1.4"/>
+  <text x="50" y="281" font-size="15" font-weight="600" fill="#f4f7fb">data/Testing</text>
+  <text x="50" y="307" font-size="15" font-weight="700" fill="#e9a3ab">1.584 gambar</text>
+  <text x="50" y="326" font-size="12.5" fill="#aebbd0">disimpan untuk test akhir</text>
+
+  <line x1="294" y1="173" x2="306" y2="173" stroke="#ff800e" stroke-opacity="0.9" stroke-width="2.2" stroke-linecap="round"/><path d="M 314 173 L 306 168 L 306 178 Z" fill="#ff800e"/>
+
+  <!-- grid header -->
+  <g font-size="11.5" fill="#aebbd0" text-anchor="middle">
+    <text x="449" y="122">bagian 1</text><text x="569" y="122">bagian 2</text><text x="689" y="122">bagian 3</text>
+    <text x="809" y="122">bagian 4</text><text x="929" y="122">bagian 5</text><text x="1067" y="122">Testing</text>
+  </g>
+
+  <!-- fold labels -->
+  <g font-size="13" font-weight="600" fill="#f4f7fb">
+    <text x="322" y="152">Fold 1</text><text x="322" y="192">Fold 2</text><text x="322" y="232">Fold 3</text>
+    <text x="322" y="272">Fold 4</text><text x="322" y="312">Fold 5</text>
+  </g>
+
+  <!-- train segments (all), valid drawn on top -->
+  <g fill="#a2c8ec" fill-opacity="0.14" stroke="#a2c8ec" stroke-opacity="0.45" stroke-width="1.2">
+    <rect x="512" y="132" width="114" height="30" rx="8"/><rect x="632" y="132" width="114" height="30" rx="8"/><rect x="752" y="132" width="114" height="30" rx="8"/><rect x="872" y="132" width="114" height="30" rx="8"/>
+    <rect x="392" y="172" width="114" height="30" rx="8"/><rect x="632" y="172" width="114" height="30" rx="8"/><rect x="752" y="172" width="114" height="30" rx="8"/><rect x="872" y="172" width="114" height="30" rx="8"/>
+    <rect x="392" y="212" width="114" height="30" rx="8"/><rect x="512" y="212" width="114" height="30" rx="8"/><rect x="752" y="212" width="114" height="30" rx="8"/><rect x="872" y="212" width="114" height="30" rx="8"/>
+    <rect x="392" y="252" width="114" height="30" rx="8"/><rect x="512" y="252" width="114" height="30" rx="8"/><rect x="632" y="252" width="114" height="30" rx="8"/><rect x="872" y="252" width="114" height="30" rx="8"/>
+    <rect x="392" y="292" width="114" height="30" rx="8"/><rect x="512" y="292" width="114" height="30" rx="8"/><rect x="632" y="292" width="114" height="30" rx="8"/><rect x="752" y="292" width="114" height="30" rx="8"/>
+  </g>
+  <g fill="#8d7bc0" fill-opacity="0.6" stroke="#b3a6e0" stroke-width="1.4">
+    <rect x="392" y="132" width="114" height="30" rx="8"/><rect x="512" y="172" width="114" height="30" rx="8"/><rect x="632" y="212" width="114" height="30" rx="8"/>
+    <rect x="752" y="252" width="114" height="30" rx="8"/><rect x="872" y="292" width="114" height="30" rx="8"/>
+  </g>
+  <g fill="#e9a3ab" fill-opacity="0.22" stroke="#e9a3ab" stroke-opacity="0.7" stroke-width="1.2">
+    <rect x="1012" y="132" width="110" height="30" rx="8"/><rect x="1012" y="172" width="110" height="30" rx="8"/><rect x="1012" y="212" width="110" height="30" rx="8"/>
+    <rect x="1012" y="252" width="110" height="30" rx="8"/><rect x="1012" y="292" width="110" height="30" rx="8"/>
+  </g>
+  <g font-size="12" fill="#aebbd0" text-anchor="middle">
+    <text x="569" y="151">train</text><text x="689" y="151">train</text><text x="809" y="151">train</text><text x="929" y="151">train</text>
+    <text x="449" y="191">train</text><text x="689" y="191">train</text><text x="809" y="191">train</text><text x="929" y="191">train</text>
+    <text x="449" y="231">train</text><text x="569" y="231">train</text><text x="809" y="231">train</text><text x="929" y="231">train</text>
+    <text x="449" y="271">train</text><text x="569" y="271">train</text><text x="689" y="271">train</text><text x="929" y="271">train</text>
+    <text x="449" y="311">train</text><text x="569" y="311">train</text><text x="689" y="311">train</text><text x="809" y="311">train</text>
+  </g>
+  <g font-size="12.5" font-weight="600" fill="#f4f7fb" text-anchor="middle">
+    <text x="449" y="151">valid</text><text x="569" y="191">valid</text><text x="689" y="231">valid</text>
+    <text x="809" y="271">valid</text><text x="929" y="311">valid</text>
+    <text x="1067" y="151">test</text><text x="1067" y="191">test</text><text x="1067" y="231">test</text>
+    <text x="1067" y="271">test</text><text x="1067" y="311">test</text>
+  </g>
+  <line x1="999" y1="128" x2="999" y2="326" stroke="#33496f" stroke-width="1.4" stroke-dasharray="3 3"/>
+
+  <!-- legend cards -->
+  <rect x="30" y="362" width="352" height="88" rx="14" fill="#0c1628" stroke="#33496f" stroke-width="1.4"/>
+  <rect x="50" y="381" width="14" height="14" rx="4" fill="#a2c8ec" fill-opacity="0.35" stroke="#a2c8ec" stroke-opacity="0.7"/>
+  <text x="74" y="393" font-size="14" font-weight="600" fill="#f4f7fb">TRAIN <tspan fill="#aebbd0" font-weight="400" font-size="12.5">· 4/5 Training (≈4.343 gambar)</tspan></text>
+  <text x="50" y="418" font-size="12.5" fill="#aebbd0">augmentasi aktif, diacak, drop_last</text>
+  <text x="50" y="437" font-size="12.5" fill="#aebbd0">satu-satunya data untuk update bobot</text>
+
+  <rect x="400" y="362" width="352" height="88" rx="14" fill="#0c1628" stroke="#33496f" stroke-width="1.4"/>
+  <rect x="420" y="381" width="14" height="14" rx="4" fill="#8d7bc0" fill-opacity="0.8" stroke="#b3a6e0"/>
+  <text x="444" y="393" font-size="14" font-weight="600" fill="#f4f7fb">VALID <tspan fill="#aebbd0" font-weight="400" font-size="12.5">· 1/5 Training (≈1.086 gambar)</tspan></text>
+  <text x="420" y="418" font-size="12.5" fill="#aebbd0">tanpa augmentasi, bobot tidak diubah</text>
+  <text x="420" y="437" font-size="12.5" fill="#aebbd0">memilih epoch terbaik + early stopping</text>
+
+  <rect x="770" y="362" width="352" height="88" rx="14" fill="#0c1628" stroke="#33496f" stroke-width="1.4"/>
+  <rect x="790" y="381" width="14" height="14" rx="4" fill="#e9a3ab" fill-opacity="0.45" stroke="#e9a3ab"/>
+  <text x="814" y="393" font-size="14" font-weight="600" fill="#f4f7fb">TEST <tspan fill="#aebbd0" font-weight="400" font-size="12.5">· seluruh Testing (1.584 gambar)</tspan></text>
+  <text x="790" y="418" font-size="12.5" fill="#aebbd0">tanpa augmentasi, sama untuk semua fold</text>
+  <text x="790" y="437" font-size="12.5" fill="#aebbd0">dinilai sekali setelah training fold selesai</text>
+
+  <text x="30" y="476" font-size="12" fill="#aebbd0"><tspan fill="#ff800e" font-weight="600">Catatan:</tspan> 0 duplikat identik antar split. Sekitar 303 gambar Testing mirip (average-hash) dengan gambar Training; dicatat, tidak dibuang.</text>
+</svg>

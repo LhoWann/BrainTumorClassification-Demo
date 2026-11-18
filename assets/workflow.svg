@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1152" height="460" viewBox="0 0 1152 460" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, 'DejaVu Sans', sans-serif">
+  <title>Alur kerja main.py</title>
+  <defs>
+    <clipPath id="card"><rect x="1.44" y="1.44" width="1149.12" height="457.12" rx="18.72"/></clipPath>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="0.35">
+      <stop offset="0" stop-color="#091122"/><stop offset="0.45" stop-color="#101b33"/>
+      <stop offset="1" stop-color="#1b2c51"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.2" r="0.55">
+      <stop offset="0" stop-color="#26385a" stop-opacity="0.55"/><stop offset="1" stop-color="#26385a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <g clip-path="url(#card)">
+    <rect width="1152" height="460" fill="url(#bg)"/>
+    <rect width="1152" height="460" fill="url(#glow)"/>
+  </g>
+  <rect x="1.44" y="1.44" width="1149.12" height="457.12" rx="18.72" fill="none" stroke="#26385a" stroke-width="2.88"/>
+
+  <text x="30" y="52" font-size="26" font-weight="600" fill="#f4f7fb">Alur Kerja <tspan fill="#a2c8ec">main.py</tspan></text>
+  <text x="30" y="80" font-size="14" fill="#aebbd0">Dari folder data/ sampai tabel hasil: 3 model <tspan fill="#ff800e">×</tspan> 5 fold, semuanya dinilai di data Testing yang sama</text>
+
+  <!-- card 1: data -->
+  <rect x="30" y="106" width="252" height="230" rx="14" fill="#0c1628" stroke="#33496f" stroke-width="1.4"/>
+  <circle cx="62" cy="140" r="14" fill="#a2c8ec"/>
+  <text x="62" y="145" text-anchor="middle" font-size="14" font-weight="700" fill="#091122">1</text>
+  <text x="86" y="146" font-size="16" font-weight="600" fill="#f4f7fb">Baca data</text>
+  <g font-size="13" font-weight="600">
+    <text x="50" y="182" fill="#f4f7fb">Training</text>
+    <text x="262" y="182" text-anchor="end" fill="#a2c8ec">5.600 → 5.429</text>
+    <text x="50" y="206" fill="#f4f7fb">Testing</text>
+    <text x="262" y="206" text-anchor="end" fill="#a2c8ec">1.600 → 1.584</text>
+  </g>
+  <line x1="50" y1="222" x2="262" y2="222" stroke="#26385a" stroke-width="1.2"/>
+  <g font-size="12.5" fill="#aebbd0">
+    <text x="50" y="246">Duplikat identik (SHA-256)</text>
+    <text x="50" y="266">dibuang: 171 + 16 gambar</text>
+    <text x="50" y="286">Antar split: 0 duplikat identik</text>
+  </g>
+  <circle cx="54" cy="312" r="4" fill="#ff800e"/><circle cx="66" cy="312" r="4" fill="#e9a3ab"/>
+  <circle cx="78" cy="312" r="4" fill="#a2c8ec"/><circle cx="90" cy="312" r="4" fill="#8d7bc0"/>
+  <text x="102" y="316.5" font-size="12.5" fill="#aebbd0">4 kelas · seed 42</text>
+
+  <!-- arrow 1-2 -->
+  <line x1="285" y1="221" x2="299" y2="221" stroke="#ff800e" stroke-opacity="0.9" stroke-width="2.2" stroke-linecap="round"/><path d="M 307 221 L 299 216 L 299 226 Z" fill="#ff800e"/>
+
+  <!-- card 2: preprocessing -->
+  <rect x="310" y="106" width="252" height="230" rx="14" fill="#0c1628" stroke="#33496f" stroke-width="1.4"/>
+  <circle cx="342" cy="140" r="14" fill="#8d7bc0"/>
+  <text x="342" y="145" text-anchor="middle" font-size="14" font-weight="700" fill="#091122">2</text>
+  <text x="366" y="146" font-size="16" font-weight="600" fill="#f4f7fb">Preprocessing</text>
+  <g font-size="12.5" fill="#aebbd0">
+    <text x="330" y="182">CropBlackBorder (threshold 10)</text>
+    <text x="330" y="202">Resize 224×224, cache di RAM</text>
+  </g>
+  <line x1="330" y1="218" x2="542" y2="218" stroke="#26385a" stroke-width="1.2"/>
+  <text x="330" y="240" font-size="13" font-weight="600" fill="#f4f7fb">Augmentasi (train saja)</text>
+  <g font-size="12.5" fill="#aebbd0">
+    <text x="330" y="260">RandomHorizontalFlip</text>
+    <text x="330" y="280">RandomRotation(10)</text>
+    <text x="330" y="300">ColorJitter(0.2, 0.2)</text>
+    <text x="330" y="320">lalu Normalize ImageNet</text>
+  </g>
+
+  <!-- arrow 2-3 -->
+  <line x1="565" y1="221" x2="579" y2="221" stroke="#ff800e" stroke-opacity="0.9" stroke-width="2.2" stroke-linecap="round"/><path d="M 587 221 L 579 216 L 579 226 Z" fill="#ff800e"/>
+
+  <!-- card 3: training -->
+  <rect x="590" y="106" width="252" height="230" rx="14" fill="#0c1628" stroke="#33496f" stroke-width="1.4"/>
+  <circle cx="622" cy="140" r="14" fill="#ff800e"/>
+  <text x="622" y="145" text-anchor="middle" font-size="14" font-weight="700" fill="#091122">3</text>
+  <text x="646" y="146" font-size="16" font-weight="600" fill="#f4f7fb">Training 5-fold</text>
+  <g font-size="12.5" fill="#aebbd0">
+    <text x="610" y="182">3 model × 5 fold = 15 run</text>
+    <text x="610" y="202">StratifiedKFold pada Training</text>
+  </g>
+  <line x1="610" y1="218" x2="822" y2="218" stroke="#26385a" stroke-width="1.2"/>
+  <text x="610" y="240" font-size="13" font-weight="600" fill="#f4f7fb">Setiap fold</text>
+  <g font-size="12.5" fill="#aebbd0">
+    <text x="610" y="260">model baru + hyperparameter Optuna</text>
+    <text x="610" y="280">maks 40 epoch + early stopping</text>
+    <text x="610" y="300">bobot val loss terendah disimpan:</text>
+    <text x="610" y="320" fill="#a2c8ec">models/&lt;model&gt;/fold&lt;k&gt;.pt</text>
+  </g>
+
+  <!-- arrow 3-4 -->
+  <line x1="845" y1="221" x2="859" y2="221" stroke="#ff800e" stroke-opacity="0.9" stroke-width="2.2" stroke-linecap="round"/><path d="M 867 221 L 859 216 L 859 226 Z" fill="#ff800e"/>
+
+  <!-- card 4: evaluation -->
+  <rect x="870" y="106" width="252" height="230" rx="14" fill="#0c1628" stroke="#33496f" stroke-width="1.4"/>
+  <circle cx="902" cy="140" r="14" fill="#e4b5de"/>
+  <text x="902" y="145" text-anchor="middle" font-size="14" font-weight="700" fill="#091122">4</text>
+  <text x="926" y="146" font-size="16" font-weight="600" fill="#f4f7fb">Evaluasi Testing</text>
+  <g font-size="12.5" fill="#aebbd0">
+    <text x="890" y="182">Prediksi 1.584 gambar Testing</text>
+    <text x="890" y="202">confusion matrix, accuracy,</text>
+  </g>
+  <g font-size="12.5" fill="#aebbd0">
+    <text x="890" y="222">precision, recall, F1 (macro)</text>
+    <text x="890" y="242">ROC-AUC (one-vs-rest)</text>
+  </g>
+  <line x1="890" y1="256" x2="1102" y2="256" stroke="#26385a" stroke-width="1.2"/>
+  <text x="890" y="278" font-size="13" font-weight="600" fill="#f4f7fb">Rata-rata ± std 5 fold</text>
+  <g font-size="12.5" fill="#aebbd0">
+    <text x="890" y="300">tabel → <tspan fill="#a2c8ec">results.md</tspan></text>
+    <text x="890" y="320">grafik → <tspan fill="#a2c8ec">comparison.png</tspan></text>
+  </g>
+
+  <!-- outputs band -->
+  <rect x="30" y="354" width="1092" height="80" rx="14" fill="#a2c8ec" fill-opacity="0.05" stroke="#33496f" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <text x="50" y="385" font-size="14" font-weight="600" fill="#a2c8ec">outputs/</text>
+  <g font-size="12.5" fill="#f4f7fb">
+    <rect x="132" y="368" width="138" height="24" rx="12" fill="#a2c8ec" fill-opacity="0.08" stroke="#33496f" stroke-width="1.2"/><text x="144" y="384.5">preprocessing.png</text>
+    <rect x="280" y="368" width="319" height="24" rx="12" fill="#a2c8ec" fill-opacity="0.08" stroke="#33496f" stroke-width="1.2"/><text x="292" y="384.5">figures/&lt;model&gt;/fold&lt;k&gt;_{history,cm,roc}.png</text>
+    <rect x="609" y="368" width="192" height="24" rx="12" fill="#a2c8ec" fill-opacity="0.08" stroke="#33496f" stroke-width="1.2"/><text x="621" y="384.5">models/&lt;model&gt;/fold&lt;k&gt;.pt</text>
+    <rect x="811" y="368" width="91" height="24" rx="12" fill="#a2c8ec" fill-opacity="0.08" stroke="#33496f" stroke-width="1.2"/><text x="823" y="384.5">results.md</text>
+    <rect x="912" y="368" width="118" height="24" rx="12" fill="#a2c8ec" fill-opacity="0.08" stroke="#33496f" stroke-width="1.2"/><text x="924" y="384.5">comparison.png</text>
+  </g>
+  <text x="50" y="418" font-size="12.5" fill="#aebbd0"><tspan fill="#ff800e" font-weight="600">Opsional, sebelum main.py:</tspan> python -m src.tuning → outputs/tuning/best_params.json (dibaca otomatis oleh main.py)</text>
+</svg>
